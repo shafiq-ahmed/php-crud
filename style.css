@@ -98,6 +98,12 @@ body {
 /* Creation Page */
 @import url(https://fonts.googleapis.com/css?family=Roboto:300);
 
+
+.error{
+  background: #e96666;
+  padding: 10px;
+}
+
 .create-page {
   width: 360px;
   padding: 8% 0 0;
