@@ -6,6 +6,10 @@
 $pdo= new PDO('mysql:host=localhost;port=3306;dbname=products_crud','root','');
 $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
+if(!is_dir('images')){
+  mkdir('images');
+}
+//var_dump($_FILES);
 $errors=[];
 $title='';
 $price='';
@@ -25,14 +29,38 @@ if(!$price){
 }
 
 if(empty($errors)){
-$statement=$pdo->prepare("INSERT INTO products(title,description,image,price,create_date) VALUES ( :title, :description,:image,:price,:date)");
-$statement->bindValue(':title',$title);
-$statement->bindValue(':image','');
-$statement->bindValue(':description',$description);
-$statement->bindValue(':price',$price);
-$statement->bindValue(':date',$date);
-$statement->execute();
+  $image= $_FILES['image'] ?? null;
+  $imagePath='';
+
+  if($image){
+    $imagePath='images/'.randomString(5).'/'.$image['name'];
+    var_dump($imagePath);
+    mkdir(dirname($imagePath) ) ;
+
+
+    move_uploaded_file($image['tmp_name'],$imagePath);
+  }
+
+
+  $statement=$pdo->prepare("INSERT INTO products(title,description,image,price,create_date) VALUES ( :title, :description,:image,:price,:date)");
+  $statement->bindValue(':title',$title);
+  $statement->bindValue(':image',$imagePath);
+  $statement->bindValue(':description',$description);
+  $statement->bindValue(':price',$price);
+  $statement->bindValue(':date',$date);
+  $statement->execute();
 }
+}
+
+function randomString(int $n){
+  $string='0123456789abcdefghijklABCDEFGHIJKL';
+  $str='';
+  for($i=0; $i<$n; $i++){
+    $index=rand(0,strlen($string)-1);
+    $str .= $string[$index];
+  }
+
+  return $str;
 }
 ?>
 
@@ -58,7 +86,7 @@ include 'style.css';
       <?php endforeach; ?>
     </div>
     <?php endif;?>
-    <form action="create.php" method="post" class="create-form">
+    <form action="create.php" method="post" class="create-form" enctype="multipart/form-data">
       <label>Product Image</label>
       <input type="file" name="image" />
       <label>Product Title</label>
